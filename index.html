@@ -22,16 +22,37 @@
 
     <div id="app" class="bg-white p-6 sm:p-8 rounded-3xl shadow-custom w-full max-w-lg border border-gray-200">
         <h1 class="text-3xl font-extrabold text-blue-800 mb-2 text-center">合成抵抗計算機</h1>
-        <!-- 説明文を更新してリアルタイム更新を追記 -->
-        <p class="text-gray-600 mb-6 text-center">抵抗値（$\Omega$）をカンマ区切りで入力し、接続方法を選択してください。入力に応じて結果がリアルタイムで更新されます。</p>
+        <!-- 説明文を更新: 単位のサポートを明記し、Ω記号を修正 -->
+        <p class="text-gray-600 mb-6 text-center">抵抗値（Ω, kΩ, MΩなど）を数値（例: 10, 2.2k, 1M）またはカラーコードで入力し、接続方法を選択してください。単体入力も可能です。</p>
 
         <!-- 入力エリア -->
         <div class="space-y-6">
             <div>
-                <label for="resistanceInput" class="block text-sm font-medium text-gray-700 mb-2">抵抗値 (例: 10, 200, 3.3)</label>
+                <label for="resistanceInput" class="block text-sm font-medium text-gray-700 mb-2">抵抗値 (数値) 入力 (例: 10, 200, 3.3k または 10 200 3.3k)</label>
                 <input type="text" id="resistanceInput" placeholder="抵抗値1, 抵抗値2, ..."
                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 transition duration-150 text-lg">
             </div>
+            
+            <!-- カラーコード入力エリア -->
+            <div class="mt-6">
+                <label for="colorCodeInput" class="block text-sm font-medium text-gray-700 mb-2">
+                    抵抗値 (カラーコード) 入力 (例: 茶 黒 赤, 青 灰 橙 金)
+                </label>
+                <input type="text" id="colorCodeInput" placeholder="色1 色2 乗数 (許容誤差は任意)..."
+                       class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-purple-500 focus:border-purple-500 transition duration-150 text-lg">
+                <p class="text-xs text-gray-500 mt-1">カラーコードは、カンマまたはスペースで区切って複数入力可能です。</p>
+                
+                <!-- パース結果表示エリア -->
+                <div id="colorCodeParsedResult" class="mt-3 p-3 bg-purple-50 rounded-lg hidden">
+                    <p class="text-sm font-semibold text-purple-800 mb-1">カラーコードからパースされた抵抗値:</p>
+                    <ul id="parsedResistanceList" class="list-disc list-inside text-sm text-purple-700 space-y-1">
+                        <!-- パースされた抵抗値が入る -->
+                    </ul>
+                </div>
+                <!-- /パース結果表示エリア -->
+
+            </div>
+
 
             <!-- 接続方法選択 -->
             <fieldset>
@@ -48,11 +69,6 @@
                 </div>
             </fieldset>
 
-            <!-- 計算ボタン -->
-            <button id="calculateButton"
-                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl transition duration-200 shadow-lg hover:shadow-xl transform hover:scale-[1.01] focus:outline-none focus:ring-4 focus:ring-blue-300 text-lg">
-                合成抵抗を計算 (手動更新)
-            </button>
         </div>
 
         <!-- 結果表示エリア -->
@@ -63,7 +79,29 @@
             </h2>
             <div class="bg-green-50 border-l-4 border-green-500 text-green-800 p-4 rounded-lg">
                 <p id="resultText" class="text-2xl font-extrabold"></p>
-                <p id="formulaText" class="text-sm mt-1 text-green-700"></p>
+                <!-- 数式が複数行になる可能性があるので、paddingを調整 -->
+                <p id="formulaText" class="text-sm mt-1 text-green-700 overflow-x-auto"></p>
+            </div>
+        </div>
+        
+        <!-- カラーコード表示エリア -->
+        <div id="colorCodeArea" class="mt-6 pt-4 border-t border-gray-200 hidden">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">対応する抵抗器のカラーコード</h3>
+            
+            <!-- 1. 4帯近似 (E24系列に近い、一般的な抵抗器) -->
+            <div id="approximateResistorSection" class="mb-6 pb-4 border-b border-gray-100 hidden">
+                <h4 class="text-lg font-semibold text-gray-700 mb-2">① おおまかなカラーコード (4帯 / E24系列近似)</h4>
+                <p class="text-sm text-gray-600 mb-4">計算結果を最も近い有効数字2桁に丸めた場合の、一般的な4帯抵抗器のカラーコードです。</p>
+                <div id="resistorVisual4Band" class="flex justify-center items-center min-h-[70px] mb-4"></div>
+                <div id="colorCodeDescription4Band" class="mt-4 text-sm text-gray-700 text-center"></div>
+            </div>
+
+            <!-- 2. 5帯精度 (計算値そのまま) -->
+            <div id="exactResistorSection" class="hidden">
+                <h4 class="text-lg font-semibold text-gray-700 mb-2">② 計算結果そのままのカラーコード (5帯 / 高精度)</h4>
+                <p class="text-sm text-gray-600 mb-4">計算結果の抵抗値を有効数字3桁で正確に表すための5帯抵抗器のカラーコードです。</p>
+                <div id="resistorVisual5Band" class="flex justify-center items-center min-h-[70px] mb-4"></div>
+                <div id="colorCodeDescription5Band" class="mt-4 text-sm text-gray-700 text-center"></div>
             </div>
         </div>
 
@@ -74,82 +112,586 @@
     </div>
 
     <script>
+        // カラーコード表示に必要なデータ (パースと表示の両方で使用)
+        const COLOR_MAP = {
+            0: { name: '黒 (Black)', color: '#000000', text: '#ffffff', value: 0, mult: 0 },
+            1: { name: '茶 (Brown)', color: '#964B00', text: '#ffffff', value: 1, mult: 1 },
+            2: { name: '赤 (Red)', color: '#FF0000', text: '#ffffff', value: 2, mult: 2 },
+            3: { name: '橙 (Orange)', color: '#FFA500', text: '#000000', value: 3, mult: 3 },
+            4: { name: '黄 (Yellow)', color: '#FFFF00', text: '#000000', value: 4, mult: 4 },
+            5: { name: '緑 (Green)', color: '#008000', text: '#ffffff', value: 5, mult: 5 },
+            6: { name: '青 (Blue)', color: '#0000FF', text: '#ffffff', value: 6, mult: 6 },
+            7: { name: '紫 (Violet)', color: '#8A2BE2', text: '#ffffff', value: 7, mult: 7 },
+            8: { name: '灰 (Gray)', color: '#808080', text: '#ffffff', value: 8, mult: 8 },
+            9: { name: '白 (White)', color: '#FFFFFF', text: '#000000', value: 9, mult: 9 },
+            'gold': { name: '金 (Gold)', color: '#FFD700', text: '#000000', mult: -1, tol: '5%' }, // 乗数 (0.1) / 許容誤差
+            'silver': { name: '銀 (Silver)', color: '#C0C0C0', text: '#000000', mult: -2, tol: '10%' } // 乗数 (0.01) / 許容誤差
+        };
+        
+        // 英語名から日本語名への逆引きマップを簡略化
+        const JPN_COLOR_MAP = {
+            'black': '黒', 'brown': '茶', 'red': '赤', 'orange': '橙', 'yellow': '黄',
+            'green': '緑', 'blue': '青', 'violet': '紫', 'gray': '灰', 'white': '白',
+            'gold': '金', 'silver': '銀'
+        };
+
+        const TOLERANCE_COLOR = {
+            '5%': { name: '金 (Gold)', color: '#FFD700', text: '#000000' }
+        };
+
+        /**
+         * 抵抗値 (Ω) を最も適切な単位にフォーマットする
+         * @param {number} R - 抵抗値 (Ω)
+         * @returns {{value: string, unit: string, latexUnit: string}} フォーマットされた値と単位
+         */
+        function formatResistance(R) {
+            let value = R;
+            let unit = 'Ω';
+            let latexUnit = '\\Omega';
+            const precision = 3; // 小数点以下の表示桁数
+
+            if (R >= 1e9) {
+                value /= 1e9;
+                unit = 'GΩ';
+                latexUnit = 'G\\Omega';
+            } else if (R >= 1e6) {
+                value /= 1e6;
+                unit = 'MΩ';
+                latexUnit = 'M\\Omega';
+            } else if (R >= 1e3) {
+                value /= 1e3;
+                unit = 'kΩ';
+                latexUnit = 'k\\Omega';
+            }
+
+            // 整数であれば小数点以下をつけない
+            if (value === Math.floor(value)) {
+                return { value: value.toString(), unit, latexUnit };
+            }
+            
+            // 小数点以下の桁数を制限し、末尾のゼロを削除
+            const formattedValue = parseFloat(value.toFixed(precision));
+
+            return { value: formattedValue.toString(), unit, latexUnit };
+        }
+
+        /**
+         * 数値入力文字列をパースし、単位 (k, M, G) を考慮してΩ値を取得する
+         * 例: "1k" -> 1000, "2.2M" -> 2200000
+         * @param {string} s - 抵抗値の文字列 (例: "10", "1.5k", "2M")
+         * @returns {number|null} パースされた抵抗値 (Ω) または無効な場合は null
+         */
+        function parseUnitValue(s) {
+            const trimmed = s.trim().toUpperCase();
+            if (trimmed === "") return null;
+
+            // 数値と単位 (K, M, G) の正規表現。小数点を含む数値、単位なしを含む。
+            const unitMatch = trimmed.match(/^(\d*\.?\d*|\d+\.?\d*)[KMG]?$/);
+            if (!unitMatch) return null;
+
+            const valueStr = unitMatch[1];
+            const unit = trimmed.replace(valueStr, '');
+
+            const value = parseFloat(valueStr);
+
+            if (isNaN(value) || value <= 0) return null;
+
+            let multiplier = 1;
+            switch (unit) {
+                case 'K':
+                    multiplier = 1e3; // kilo (kΩ)
+                    break;
+                case 'M':
+                    multiplier = 1e6; // mega (MΩ)
+                    break;
+                case 'G':
+                    multiplier = 1e9; // giga (GΩ)
+                    break;
+                // default: multiplier = 1 (Ω)
+            }
+
+            return value * multiplier;
+        }
+
+        /**
+         * カラーコード（色名）を抵抗値（数値）に変換する
+         * @param {string} bandString - 色名（スペースまたはカンマ区切り）
+         * @returns {number} 抵抗値 (Ω)
+         * @throws {Error} パースエラーが発生した場合
+         */
+        function parseColorCode(bandString) {
+            // 全角/半角スペース、カンマを統一し、小文字に変換
+            const bands = bandString.toLowerCase()
+                                    .replace(/[,，、\s]+/g, ' ') // 全ての区切り文字を半角スペースに
+                                    .trim()
+                                    .split(' ')
+                                    .filter(s => s.length > 0);
+            
+            // 日本語の色名に統一
+            const normalizedBands = bands.map(band => JPN_COLOR_MAP[band] || band);
+            
+            // 最低3帯（第1帯、第2帯、乗数帯）が必要
+            if (normalizedBands.length < 3) {
+                throw new Error("カラーコードは最低3帯（第1帯、第2帯、乗数帯）が必要です。");
+            }
+            
+            const [B1, B2, BM] = normalizedBands;
+            
+            // マッピングを使用して値を取得
+            // nameプロパティがB1から始まる要素を検索
+            const C1 = Object.values(COLOR_MAP).find(c => c.name.startsWith(B1));
+            const C2 = Object.values(COLOR_MAP).find(c => c.name.startsWith(B2));
+            const CM = Object.values(COLOR_MAP).find(c => c.name.startsWith(BM));
+            
+            // 値の検証
+            if (!C1 || C1.value === undefined) {
+                throw new Error(`無効な第1帯の色: ${B1}`);
+            }
+            if (!C2 || C2.value === undefined) {
+                throw new Error(`無効な第2帯の色: ${B2}`);
+            }
+            // 乗数帯は'金'、'銀'も許容する
+            if (!CM || CM.mult === undefined) {
+                throw new Error(`無効な乗数帯の色: ${BM}`);
+            }
+
+            // 抵抗値の計算
+            const D1 = C1.value;
+            const D2 = C2.value;
+            const M_exp = CM.mult;
+            
+            const resistanceValue = (D1 * 10 + D2) * Math.pow(10, M_exp);
+            
+            return resistanceValue;
+        }
+
+        /**
+         * 4帯抵抗のカラーコードを生成し、UIに表示する (有効数字2桁近似)
+         */
+        function generateColorCode4Band(resistance) {
+            const visualElement = document.getElementById('resistorVisual4Band');
+            const descriptionElement = document.getElementById('colorCodeDescription4Band');
+            const areaElement = document.getElementById('approximateResistorSection');
+            
+            // 抵抗値が0以下、または大きすぎる場合は非表示
+            if (resistance <= 0 || resistance > 99 * Math.pow(10, 9)) {
+                areaElement.classList.add('hidden');
+                return;
+            }
+
+            // 1. 抵抗値の正規化 (有効数字2桁と乗数に分解)
+            let R = resistance;
+            let digits = 0; // 乗数 (10^digits)
+
+            // 抵抗値を10Ω～99Ωの範囲に正規化 (10.0 ~ 99.99...)
+            while (R >= 100) {
+                R /= 10;
+                digits++;
+            }
+            while (R < 10 && R > 0) {
+                R *= 10;
+                digits--;
+            }
+
+            // 正規化された抵抗値を最も近い整数に丸める (有効数字2桁の抵抗器の近似)
+            const significantDigits = Math.round(R);
+
+            let D1, D2;
+            let M = digits;
+
+            if (significantDigits >= 100) { 
+                // 例: 99.5が100に丸められた場合、10 x 10^(M+1) にする
+                R = significantDigits / 10;
+                M++;
+                D1 = Math.floor(R / 10); 
+                D2 = Math.round(R % 10); 
+            } else {
+                D1 = Math.floor(significantDigits / 10);
+                D2 = significantDigits % 10;
+            }
+            
+            // D1, D2, M に対応するカラーマップエントリーを検索
+            const C1 = Object.values(COLOR_MAP).find(c => c.value === D1);
+            const C2 = Object.values(COLOR_MAP).find(c => c.value === D2);
+            const CM = Object.values(COLOR_MAP).find(c => c.mult === M);
+            const CT = TOLERANCE_COLOR['5%']; // 許容誤差 5% (金)
+            
+            // 2. HTML要素の生成
+            if (!C1 || !C2 || !CM || !CT) {
+                areaElement.classList.add('hidden');
+                return;
+            }
+            
+            // 抵抗器のボディ (SVG)
+            const resistorBody = `
+                <svg viewBox="0 0 300 100" class="w-full max-w-xs h-auto">
+                    <!-- Resistor Body -->
+                    <rect x="20" y="30" width="260" height="40" rx="15" fill="#f0e68c" stroke="#333" stroke-width="2"/>
+                    <!-- Leads -->
+                    <line x1="0" y1="50" x2="20" y2="50" stroke="#808080" stroke-width="4"/>
+                    <line x1="280" y1="50" x2="300" y2="50" stroke="#808080" stroke-width="4"/>
+                    
+                    <!-- Band 1 (D1) - 第1帯 -->
+                    <rect x="30" y="30" width="10" height="40" fill="${C1.color}" rx="2" stroke="#333" stroke-width="1"/>
+                    <!-- Band 2 (D2) - 第2帯 -->
+                    <rect x="60" y="30" width="10" height="40" fill="${C2.color}" rx="2" stroke="#333" stroke-width="1"/>
+                    <!-- Band 3 (Multiplier M) - 第3帯(乗数) -->
+                    <rect x="100" y="30" width="10" height="40" fill="${CM.color}" rx="2" stroke="#333" stroke-width="1"/>
+                    
+                    <!-- Band 4 (Tolerance T - 5% Gold) - 第4帯(許容誤差) -->
+                    <rect x="250" y="30" width="10" height="40" fill="${CT.color}" rx="2" stroke="#333" stroke-width="1"/>
+                </svg>
+            `;
+
+            // 3. 説明テキストの生成
+            const description = `
+                <div class="space-y-2">
+                    <p class="text-base font-semibold"><strong>近似抵抗値:</strong> ${D1}${D2} $\\times 10^{${M}}$ $\\Omega$</p>
+                    <table class="w-full text-left border-collapse mt-4">
+                        <thead>
+                            <tr class="text-xs font-semibold uppercase text-gray-500 border-b">
+                                <th class="py-1">帯</th>
+                                <th class="py-1">内容</th>
+                                <th class="py-1">色</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-b">
+                                <td class="py-1">第1帯 (1桁目)</td>
+                                <td class="py-1">${D1}</td>
+                                <td class="py-1 font-semibold" style="color: ${C1.color};">${C1.name.split(' ')[0]}</td>
+                            </tr>
+                            <tr class="border-b">
+                                <td class="py-1">第2帯 (2桁目)</td>
+                                <td class="py-1">${D2}</td>
+                                <td class="py-1 font-semibold" style="color: ${C2.color};">${C2.name.split(' ')[0]}</td>
+                            </tr>
+                            <tr class="border-b">
+                                <td class="py-1">第3帯 (乗数)</td>
+                                <td class="py-1">$\times 10^{${M}}$</td>
+                                <td class="py-1 font-semibold" style="color: ${CM.color};">${CM.name.split(' ')[0]}</td>
+                            </tr>
+                            <tr>
+                                <td class="py-1">第4帯 (許容誤差)</td>
+                                <td class="py-1">±5%</td>
+                                <td class="py-1 font-semibold" style="color: ${CT.color};">${CT.name.split(' ')[0]}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            visualElement.innerHTML = resistorBody;
+            descriptionElement.innerHTML = description;
+            areaElement.classList.remove('hidden');
+        }
+
+        /**
+         * 5帯抵抗のカラーコードを生成し、UIに表示する (計算結果そのまま/有効数字3桁)
+         */
+        function generateColorCode5Band(resistance) {
+            const visualElement = document.getElementById('resistorVisual5Band');
+            const descriptionElement = document.getElementById('colorCodeDescription5Band');
+            const areaElement = document.getElementById('exactResistorSection');
+            
+            // 抵抗値が0以下、または大きすぎる場合は非表示
+            if (resistance <= 0 || resistance > 999 * Math.pow(10, 8)) {
+                areaElement.classList.add('hidden');
+                return;
+            }
+
+            // 1. 抵抗値の正規化 (有効数字3桁と乗数に分解)
+            let R = resistance;
+            let digits = 0; // 乗数 (10^digits)
+
+            // 抵抗値を100Ω～999Ωの範囲に正規化
+            while (R >= 1000) {
+                R /= 10;
+                digits++;
+            }
+            while (R < 100 && R > 0) {
+                R *= 10;
+                digits--;
+            }
+
+            // 正規化された抵抗値を最も近い整数に丸める (有効数字3桁)
+            const significantDigits = Math.round(R); // 100から999の整数
+
+            let D1 = Math.floor(significantDigits / 100);
+            let D2 = Math.floor((significantDigits % 100) / 10);
+            let D3 = significantDigits % 10;
+            let M = digits;
+
+            // 1000に丸められた場合の調整 (例: 999.5が1000になった場合、100 x 10^(M+1))
+            if (significantDigits === 1000) {
+                 D1 = 1; D2 = 0; D3 = 0; M++;
+            }
+            
+            // D1, D2, D3, M に対応するカラーマップエントリーを検索
+            const C1 = Object.values(COLOR_MAP).find(c => c.value === D1);
+            const C2 = Object.values(COLOR_MAP).find(c => c.value === D2);
+            const C3 = Object.values(COLOR_MAP).find(c => c.value === D3); // 第3帯も数値
+            const CM = Object.values(COLOR_MAP).find(c => c.mult === M);
+            const CT = TOLERANCE_COLOR['5%']; // 許容誤差 5% (金)
+            
+            // 2. HTML要素の生成
+            if (!C1 || !C2 || !C3 || !CM || !CT) {
+                areaElement.classList.add('hidden');
+                return;
+            }
+            
+            // 抵抗器のボディ (SVG) - 5帯用
+            const resistorBody = `
+                <svg viewBox="0 0 300 100" class="w-full max-w-xs h-auto">
+                    <!-- Resistor Body -->
+                    <rect x="20" y="30" width="260" height="40" rx="15" fill="#f0e68c" stroke="#333" stroke-width="2"/>
+                    <!-- Leads -->
+                    <line x1="0" y1="50" x2="20" y2="50" stroke="#808080" stroke-width="4"/>
+                    <line x1="280" y1="50" x2="300" y2="50" stroke="#808080" stroke-width="4"/>
+                    
+                    <!-- Band 1 (D1) - 第1帯 -->
+                    <rect x="30" y="30" width="10" height="40" fill="${C1.color}" rx="2" stroke="#333" stroke-width="1"/>
+                    <!-- Band 2 (D2) - 第2帯 -->
+                    <rect x="55" y="30" width="10" height="40" fill="${C2.color}" rx="2" stroke="#333" stroke-width="1"/>
+                    <!-- Band 3 (D3) - 第3帯(3桁目) -->
+                    <rect x="80" y="30" width="10" height="40" fill="${C3.color}" rx="2" stroke="#333" stroke-width="1"/>
+                    <!-- Band 4 (Multiplier M) - 第4帯(乗数) -->
+                    <rect x="120" y="30" width="10" height="40" fill="${CM.color}" rx="2" stroke="#333" stroke-width="1"/>
+                    
+                    <!-- Band 5 (Tolerance T - 5% Gold) - 第5帯(許容誤差) -->
+                    <rect x="250" y="30" width="10" height="40" fill="${CT.color}" rx="2" stroke="#333" stroke-width="1"/>
+                </svg>
+            `;
+
+            // 3. 説明テキストの生成
+            const description = `
+                <div class="space-y-2">
+                    <p class="text-base font-semibold"><strong>正確な抵抗値:</strong> ${D1}${D2}${D3} $\\times 10^{${M}}$ $\\Omega$</p>
+                    <table class="w-full text-left border-collapse mt-4">
+                        <thead>
+                            <tr class="text-xs font-semibold uppercase text-gray-500 border-b">
+                                <th class="py-1">帯</th>
+                                <th class="py-1">内容</th>
+                                <th class="py-1">色</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-b">
+                                <td class="py-1">第1帯 (1桁目)</td>
+                                <td class="py-1">${D1}</td>
+                                <td class="py-1 font-semibold" style="color: ${C1.color};">${C1.name.split(' ')[0]}</td>
+                            </tr>
+                            <tr class="border-b">
+                                <td class="py-1">第2帯 (2桁目)</td>
+                                <td class="py-1">${D2}</td>
+                                <td class="py-1 font-semibold" style="color: ${C2.color};">${C2.name.split(' ')[0]}</td>
+                            </tr>
+                            <tr class="border-b">
+                                <td class="py-1">第3帯 (3桁目)</td>
+                                <td class="py-1">${D3}</td>
+                                <td class="py-1 font-semibold" style="color: ${C3.color};">${C3.name.split(' ')[0]}</td>
+                            </tr>
+                            <tr class="border-b">
+                                <td class="py-1">第4帯 (乗数)</td>
+                                <td class="py-1">$\times 10^{${M}}$</td>
+                                <td class="py-1 font-semibold" style="color: ${CM.color};">${CM.name.split(' ')[0]}</td>
+                            </tr>
+                            <tr>
+                                <td class="py-1">第5帯 (許容誤差)</td>
+                                <td class="py-1">±5%</td>
+                                <td class="py-1 font-semibold" style="color: ${CT.color};">${CT.name.split(' ')[0]}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            visualElement.innerHTML = resistorBody;
+            descriptionElement.innerHTML = description;
+            areaElement.classList.remove('hidden');
+        }
+
+
         document.addEventListener('DOMContentLoaded', () => {
             const resistanceInput = document.getElementById('resistanceInput');
-            const calculateButton = document.getElementById('calculateButton');
+            const colorCodeInput = document.getElementById('colorCodeInput');
             const resultArea = document.getElementById('resultArea');
             const resultText = document.getElementById('resultText');
             const formulaText = document.getElementById('formulaText');
             const errorArea = document.getElementById('errorArea');
             const errorText = document.getElementById('errorText');
+            const colorCodeArea = document.getElementById('colorCodeArea'); 
+            const colorCodeParsedResult = document.getElementById('colorCodeParsedResult'); // パース結果のコンテナ
+            const parsedResistanceList = document.getElementById('parsedResistanceList'); // パースされた値のリスト
 
             /**
              * 抵抗の合成抵抗を計算するメイン関数
              */
             function calculateResistance() {
-                // エラーと結果表示を初期化
+                // エラーと結果表示、カラーコード表示を初期化
                 errorArea.classList.add('hidden');
                 resultArea.classList.add('hidden');
+                colorCodeArea.classList.add('hidden'); 
+                document.getElementById('approximateResistorSection').classList.add('hidden');
+                document.getElementById('exactResistorSection').classList.add('hidden');
                 
-                const inputString = resistanceInput.value.trim();
+                colorCodeParsedResult.classList.add('hidden'); // パース結果を非表示に
+                parsedResistanceList.innerHTML = ''; // パースされたリストをクリア
+                
                 const connectionType = document.querySelector('input[name="connectionType"]:checked').value;
+                
+                let allResistances = [];
+                let hasError = false; 
 
-                // 1. 入力値のパースと検証
-                // 入力が空の場合は、何も表示しない（リアルタイムプレビューの自然な動作）
-                if (inputString === "") {
-                    return;
+                // 1. 数値入力のパース (単位対応)
+                const numericInputString = resistanceInput.value.trim();
+                if (numericInputString !== "") {
+                    // カンマ (,) または半角スペース (\s+) のどちらか、あるいは両方で区切られた入力を処理
+                    const numericValues = numericInputString.split(/,\s*|\s+/).map(s => {
+                        const num = parseUnitValue(s); // 新しいパーサーを使用
+                        return num;
+                    }).filter(r => r !== null);
+                    allResistances.push(...numericValues);
+                }
+
+                // 2. カラーコード入力のパース
+                const colorCodeString = colorCodeInput.value.trim();
+                if (colorCodeString !== "") {
+                    // カンマ区切りで複数のカラーコードセットをパースする（例: "茶黒赤, 青灰橙"）
+                    const colorCodeSets = colorCodeString.split(/,\s*/).filter(s => s.trim().length > 0);
+                    
+                    try {
+                        const colorCodeValues = colorCodeSets.map(set => parseColorCode(set));
+                        allResistances.push(...colorCodeValues);
+
+                        // --- パース結果の表示 ---
+                        if (colorCodeValues.length > 0) {
+                            const listItems = colorCodeValues.map(r => {
+                                const formatted = formatResistance(r);
+                                return `<li>${formatted.value} ${formatted.unit}</li>`;
+                            }).join('');
+                            
+                            parsedResistanceList.innerHTML = listItems;
+                            colorCodeParsedResult.classList.remove('hidden');
+                        }
+                        // ---------------------------------
+
+                    } catch (e) {
+                        showError(`カラーコードの入力エラー: ${e.message}`);
+                        hasError = true;
+                    }
                 }
                 
-                const resistanceValues = inputString.split(/,\s*|\s+/).map(s => {
-                    const num = parseFloat(s);
-                    // 抵抗値は正の数値である必要
-                    if (isNaN(num) || num <= 0) {
-                        return null; // 無効な値としてマーク
-                    }
-                    return num;
-                }).filter(r => r !== null); // 有効な数値のみを抽出
+                if (hasError) return; 
 
-                // 有効な抵抗値が2つ以上あるか確認
-                if (resistanceValues.length < 2) {
-                    showError('抵抗値を2つ以上、カンマまたはスペースで区切って入力してください。抵抗値は正の数である必要があります。');
+                // 3. 統合された抵抗値の検証と単体処理の追加
+                if (allResistances.length === 0) {
+                    if (numericInputString === "" && colorCodeString === "") return;
+                    showError('有効な抵抗値を入力してください。');
                     return;
-                }
-
+                } 
+                
                 let totalResistance = 0;
                 let formula = '';
+                let isSingleResistance = allResistances.length === 1;
 
-                // 2. 接続方法に応じた計算
-                if (connectionType === 'series') {
-                    // 直列接続: R_total = R1 + R2 + ...
-                    totalResistance = resistanceValues.reduce((sum, R) => sum + R, 0);
-                    formula = `$$R_{\\text{total}} = ${resistanceValues.map(r => r.toFixed(1)).join(' + ')} \\approx ${totalResistance.toFixed(3)}\\Omega$$`;
-                } else if (connectionType === 'parallel') {
-                    // 並列接続: 1/R_total = 1/R1 + 1/R2 + ...
-                    const reciprocalSum = resistanceValues.reduce((sum, R) => sum + (1 / R), 0);
+                if (isSingleResistance) {
+                    // 単体抵抗値の場合の処理
+                    totalResistance = allResistances[0];
+                    const formattedTotal = formatResistance(totalResistance);
                     
-                    if (reciprocalSum === 0) {
-                         // R=0の抵抗が含まれる場合は理論上無限大になるが、ここでは正の抵抗のみを扱っているため発生しないはず
-                         showError('計算エラーが発生しました。入力値を確認してください。');
-                         return;
+                    // 結果テキストの更新
+                    resultText.textContent = `抵抗値: ${formattedTotal.value} ${formattedTotal.unit}`;
+                    
+                    // 単体の場合、数式は簡潔に
+                    formulaText.innerHTML = `$$R_{\\text{total}} = R_1 \\approx ${formattedTotal.value}${formattedTotal.latexUnit}$$`;
+                    
+                    resultArea.classList.remove('hidden');
+
+                    // カラーコードの計算と表示 (単体でも両方のセクションを表示)
+                    colorCodeArea.classList.remove('hidden');
+                    generateColorCode4Band(totalResistance);
+                    generateColorCode5Band(totalResistance);
+                    
+                } else {
+                    // 2つ以上の抵抗値がある場合の合成抵抗計算処理
+                    
+                    /**
+                     * 長い数式を複数行に分割するためのヘルパー関数 (省略)
+                     */
+                    function generateMultiLineFormula(terms, totalResistance, connectionType) {
+                        const chunkSize = 4; // 1行に表示する最大の項数 (4つを超えたら改行)
+                        let lines = [];
+                        // 項の配列をチャンクに分割
+                        for (let i = 0; i < terms.length; i += chunkSize) {
+                            lines.push(terms.slice(i, i + chunkSize).join(' + '));
+                        }
+
+                        const formattedTotal = formatResistance(totalResistance);
+
+                        if (connectionType === 'series') {
+                            // 最初の行はそのまま、2行目以降は改行とプラス記号を付けて結合
+                            const formulaParts = lines.join(' \\\\ + '); 
+                            // 最終結果を改行して表示
+                            return `
+                                $$R_{\\text{total}} = ${formulaParts} \\\\ \\approx ${formattedTotal.value}${formattedTotal.latexUnit}$$
+                            `;
+                        } else { // parallel
+                            const formulaParts = lines.join(' \\\\ + ');
+                            // 並列接続は 1/R の項を改行で表示し、R_total は別行に表示
+                            let formula = `
+                                $$\\frac{1}{R_{\\text{total}}} = ${formulaParts}$$
+                            `;
+                            // 最終結果は別Divで表示し、自動的に改行される
+                            formula += `<div class="mt-2">$$R_{\\text{total}} \\approx ${formattedTotal.value}${formattedTotal.latexUnit}$$</div>`;
+                            return formula;
+                        }
                     }
 
-                    totalResistance = 1 / reciprocalSum;
+
+                    // 4. 接続方法に応じた計算
+                    if (connectionType === 'series') {
+                        // 直列接続: R_total = R1 + R2 + ...
+                        totalResistance = allResistances.reduce((sum, R) => sum + R, 0);
+                        // 項の表示はΩ値で統一
+                        const seriesTerms = allResistances.map(r => formatResistance(r).value + formatResistance(r).latexUnit);
+                        
+                        formula = generateMultiLineFormula(seriesTerms, totalResistance, 'series');
+
+                    } else if (connectionType === 'parallel') {
+                        // 並列接続: 1/R_total = 1/R1 + 1/R2 + ...
+                        const reciprocalSum = allResistances.reduce((sum, R) => sum + (1 / R), 0);
+                        
+                        if (reciprocalSum === 0) {
+                            showError('計算エラーが発生しました。入力値を確認してください。');
+                            return;
+                        }
+
+                        totalResistance = 1 / reciprocalSum;
+                        
+                        // 逆数の項の表示はΩ値で統一
+                        const reciprocalTerms = allResistances.map(r => `\\frac{1}{${formatResistance(r).value + formatResistance(r).latexUnit}}`);
+                        
+                        formula = generateMultiLineFormula(reciprocalTerms, totalResistance, 'parallel');
+                    }
+
+                    // 5. 結果表示 (合成抵抗の場合)
+                    const formattedTotal = formatResistance(totalResistance);
+                    resultText.textContent = `合成抵抗: ${formattedTotal.value} ${formattedTotal.unit}`;
+                    formulaText.innerHTML = formula;
                     
-                    const reciprocalTerms = resistanceValues.map(r => `\\frac{1}{${r.toFixed(1)}}`).join(' + ');
-                    // 並列計算の式をよりわかりやすく表示
-                    formula = `$$\\frac{1}{R_{\\text{total}}} = ${reciprocalTerms}$$`;
-                    formula += `<div class="mt-2">$$R_{\\text{total}} \\approx ${totalResistance.toFixed(3)}\\Omega$$</div>`;
+                    resultArea.classList.remove('hidden');
+
+                    // 6. カラーコードの計算と表示
+                    colorCodeArea.classList.remove('hidden');
+                    generateColorCode4Band(totalResistance);
+                    generateColorCode5Band(totalResistance);
                 }
 
-                // 3. 結果表示
-                resultText.textContent = `合成抵抗: ${totalResistance.toFixed(3)} Ω`;
-                formulaText.innerHTML = formula;
-                
-                resultArea.classList.remove('hidden');
                 
                 // MathJaxを再レンダリングして数式を表示
                 if (window.MathJax) {
-                    MathJax.typesetPromise([formulaText]).catch((err) => console.log('MathJax Typeset Error: ' + err.message));
+                    MathJax.typesetPromise([formulaText, document.getElementById('colorCodeDescription4Band'), document.getElementById('colorCodeDescription5Band'), parsedResistanceList]).catch((err) => console.log('MathJax Typeset Error: ' + err.message));
                 }
             }
 
@@ -162,9 +704,10 @@
                 errorArea.classList.remove('hidden');
             }
             
-            // --- 簡易プレビュー機能の追加 ---
+            // --- 簡易プレビュー機能 (リアルタイム計算) ---
             // 抵抗値入力フィールドの 'input' イベントでリアルタイム計算
             resistanceInput.addEventListener('input', calculateResistance);
+            colorCodeInput.addEventListener('input', calculateResistance); // カラーコード入力にもリスナーを追加
 
             // 接続方法ラジオボタンの 'change' イベントでリアルタイム計算
             document.querySelectorAll('input[name="connectionType"]').forEach(radio => {
@@ -172,22 +715,29 @@
             });
             // --------------------------------
 
-            // 手動計算ボタンのイベントリスナーは引き続き機能させる
-            calculateButton.addEventListener('click', calculateResistance);
-
-            // Enterキーでの計算実行
+            // Enterキーでの計算実行 (入力後の確定操作として残す)
             resistanceInput.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') {
                     e.preventDefault(); // フォーム送信を防ぐ
                     calculateResistance();
                 }
             });
+            colorCodeInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault(); // フォーム送信を防ぐ
+                    calculateResistance();
+                }
+            });
+
 
             // MathJax CDNの読み込み（数式表示のため）
             const script = document.createElement('script');
             script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
             script.id = 'MathJax-script';
             document.head.appendChild(script);
+
+            // 初回計算
+            calculateResistance();
         });
     </script>
 </body>
