@@ -1,210 +1,194 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
-<html>
+<!DOCTYPE html>
+<html lang="ja">
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <meta http-equiv="Content-Style-Type" content="text/css">
-  <title></title>
-  <meta name="Generator" content="Cocoa HTML Writer">
-  <meta name="CocoaVersion" content="2299.77">
-  <style type="text/css">
-    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica}
-    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; min-height: 14.0px}
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>抵抗の合成抵抗計算アプリ</title>
+    <!-- Tailwind CSS CDNを読み込み -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 日本語フォント設定 -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Noto+Sans+JP:wght@400;700&display=swap');
+        body {
+            font-family: 'Noto Sans JP', 'Inter', sans-serif;
+        }
+        /* カスタムスタイリング */
+        .shadow-custom {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+    </style>
 </head>
-<body>
-<p class="p1">&lt;!DOCTYPE html&gt;</p>
-<p class="p1">&lt;html lang="ja"&gt;</p>
-<p class="p1">&lt;head&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;meta charset="UTF-8"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;title&gt;抵抗の合成抵抗計算アプリ&lt;/title&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;!-- Tailwind CSS CDNを読み込み --&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;script src="https://cdn.tailwindcss.com"&gt;&lt;/script&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;!-- 日本語フォント設定 --&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;style&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=Noto+Sans+JP:wght@400;700&amp;display=swap');</p>
-<p class="p1"><span class="Apple-converted-space">        </span>body {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-family: 'Noto Sans JP', 'Inter', sans-serif;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>/* カスタムスタイリング */</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.shadow-custom {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/style&gt;</p>
-<p class="p1">&lt;/head&gt;</p>
-<p class="p1">&lt;body class="bg-gray-50 min-h-screen flex items-center justify-center p-4"&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div id="app" class="bg-white p-6 sm:p-8 rounded-3xl shadow-custom w-full max-w-lg border border-gray-200"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;h1 class="text-3xl font-extrabold text-blue-800 mb-2 text-center"&gt;合成抵抗計算機&lt;/h1&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;!-- 説明文を更新してリアルタイム更新を追記 --&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;p class="text-gray-600 mb-6 text-center"&gt;抵抗値（$\Omega$）をカンマ区切りで入力し、接続方法を選択してください。入力に応じて結果がリアルタイムで更新されます。&lt;/p&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;!-- 入力エリア --&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="space-y-6"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;label for="resistanceInput" class="block text-sm font-medium text-gray-700 mb-2"&gt;抵抗値 (例: 10, 200, 3.3)&lt;/label&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;input type="text" id="resistanceInput" placeholder="抵抗値1, 抵抗値2, ..."</p>
-<p class="p1"><span class="Apple-converted-space">                       </span>class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 transition duration-150 text-lg"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;!-- 接続方法選択 --&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;fieldset&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;legend class="text-sm font-medium text-gray-700 mb-3"&gt;接続方法の選択&lt;/legend&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="flex space-x-6 justify-center"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;label class="flex items-center space-x-2 cursor-pointer bg-blue-50 p-3 rounded-lg hover:bg-blue-100 transition duration-150"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;input type="radio" name="connectionType" value="series" checked class="h-5 w-5 text-blue-600 border-gray-300 focus:ring-blue-500"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;span class="text-base font-semibold text-gray-800"&gt;直列接続&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/label&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;label class="flex items-center space-x-2 cursor-pointer bg-blue-50 p-3 rounded-lg hover:bg-blue-100 transition duration-150"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;input type="radio" name="connectionType" value="parallel" class="h-5 w-5 text-blue-600 border-gray-300 focus:ring-blue-500"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;span class="text-base font-semibold text-gray-800"&gt;並列接続&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/label&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/fieldset&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;!-- 計算ボタン --&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;button id="calculateButton"</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl transition duration-200 shadow-lg hover:shadow-xl transform hover:scale-[1.01] focus:outline-none focus:ring-4 focus:ring-blue-300 text-lg"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>合成抵抗を計算 (手動更新)</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;!-- 結果表示エリア --&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div id="resultArea" class="mt-8 pt-6 border-t border-gray-200 hidden"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;h2 class="text-xl font-bold text-gray-800 mb-3 flex items-center"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>計算結果</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;svg class="w-6 h-6 ml-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"&gt;&lt;path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"&gt;&lt;/path&gt;&lt;/svg&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/h2&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="bg-green-50 border-l-4 border-green-500 text-green-800 p-4 rounded-lg"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;p id="resultText" class="text-2xl font-extrabold"&gt;&lt;/p&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;p id="formulaText" class="text-sm mt-1 text-green-700"&gt;&lt;/p&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;!-- エラーメッセージエリア --&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div id="errorArea" class="mt-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg hidden"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;p id="errorText" class="font-medium"&gt;&lt;/p&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;script&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>document.addEventListener('DOMContentLoaded', () =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const resistanceInput = document.getElementById('resistanceInput');</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const calculateButton = document.getElementById('calculateButton');</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const resultArea = document.getElementById('resultArea');</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const resultText = document.getElementById('resultText');</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const formulaText = document.getElementById('formulaText');</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const errorArea = document.getElementById('errorArea');</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const errorText = document.getElementById('errorText');</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>/**</p>
-<p class="p1"><span class="Apple-converted-space">             </span>* 抵抗の合成抵抗を計算するメイン関数</p>
-<p class="p1"><span class="Apple-converted-space">             </span>*/</p>
-<p class="p1"><span class="Apple-converted-space">            </span>function calculateResistance() {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>// エラーと結果表示を初期化</p>
-<p class="p1"><span class="Apple-converted-space">                </span>errorArea.classList.add('hidden');</p>
-<p class="p1"><span class="Apple-converted-space">                </span>resultArea.classList.add('hidden');</p>
-<p class="p2"><span class="Apple-converted-space">                </span></p>
-<p class="p1"><span class="Apple-converted-space">                </span>const inputString = resistanceInput.value.trim();</p>
-<p class="p1"><span class="Apple-converted-space">                </span>const connectionType = document.querySelector('input[name="connectionType"]:checked').value;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">                </span>// 1. 入力値のパースと検証</p>
-<p class="p1"><span class="Apple-converted-space">                </span>// 入力が空の場合は、何も表示しない（リアルタイムプレビューの自然な動作）</p>
-<p class="p1"><span class="Apple-converted-space">                </span>if (inputString === "") {</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>return;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>}</p>
-<p class="p2"><span class="Apple-converted-space">                </span></p>
-<p class="p1"><span class="Apple-converted-space">                </span>const resistanceValues = inputString.split(/,\s*|\s+/).map(s =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>const num = parseFloat(s);</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>// 抵抗値は正の数値である必要</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>if (isNaN(num) || num &lt;= 0) {</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>return null; // 無効な値としてマーク</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>}</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>return num;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>}).filter(r =&gt; r !== null); // 有効な数値のみを抽出</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">                </span>// 有効な抵抗値が2つ以上あるか確認</p>
-<p class="p1"><span class="Apple-converted-space">                </span>if (resistanceValues.length &lt; 2) {</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>showError('抵抗値を2つ以上、カンマまたはスペースで区切って入力してください。抵抗値は正の数である必要があります。');</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>return;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">                </span>let totalResistance = 0;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>let formula = '';</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">                </span>// 2. 接続方法に応じた計算</p>
-<p class="p1"><span class="Apple-converted-space">                </span>if (connectionType === 'series') {</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>// 直列接続: R_total = R1 + R2 + ...</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>totalResistance = resistanceValues.reduce((sum, R) =&gt; sum + R, 0);</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>formula = `$$R_{\\text{total}} = ${resistanceValues.map(r =&gt; r.toFixed(1)).join(' + ')} \\approx ${totalResistance.toFixed(3)}\\Omega$$`;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>} else if (connectionType === 'parallel') {</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>// 並列接続: 1/R_total = 1/R1 + 1/R2 + ...</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>const reciprocalSum = resistanceValues.reduce((sum, R) =&gt; sum + (1 / R), 0);</p>
-<p class="p2"><span class="Apple-converted-space">                    </span></p>
-<p class="p1"><span class="Apple-converted-space">                    </span>if (reciprocalSum === 0) {</p>
-<p class="p1"><span class="Apple-converted-space">                         </span>// R=0の抵抗が含まれる場合は理論上無限大になるが、ここでは正の抵抗のみを扱っているため発生しないはず</p>
-<p class="p1"><span class="Apple-converted-space">                         </span>showError('計算エラーが発生しました。入力値を確認してください。');</p>
-<p class="p1"><span class="Apple-converted-space">                         </span>return;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">                    </span>totalResistance = 1 / reciprocalSum;</p>
-<p class="p2"><span class="Apple-converted-space">                    </span></p>
-<p class="p1"><span class="Apple-converted-space">                    </span>const reciprocalTerms = resistanceValues.map(r =&gt; `\\frac{1}{${r.toFixed(1)}}`).join(' + ');</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>// 並列計算の式をよりわかりやすく表示</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>formula = `$$\\frac{1}{R_{\\text{total}}} = ${reciprocalTerms}$$`;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>formula += `&lt;div class="mt-2"&gt;$$R_{\\text{total}} \\approx ${totalResistance.toFixed(3)}\\Omega$$&lt;/div&gt;`;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">                </span>// 3. 結果表示</p>
-<p class="p1"><span class="Apple-converted-space">                </span>resultText.textContent = `合成抵抗: ${totalResistance.toFixed(3)} Ω`;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>formulaText.innerHTML = formula;</p>
-<p class="p2"><span class="Apple-converted-space">                </span></p>
-<p class="p1"><span class="Apple-converted-space">                </span>resultArea.classList.remove('hidden');</p>
-<p class="p2"><span class="Apple-converted-space">                </span></p>
-<p class="p1"><span class="Apple-converted-space">                </span>// MathJaxを再レンダリングして数式を表示</p>
-<p class="p1"><span class="Apple-converted-space">                </span>if (window.MathJax) {</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>MathJax.typesetPromise([formulaText]).catch((err) =&gt; console.log('MathJax Typeset Error: ' + err.message));</p>
-<p class="p1"><span class="Apple-converted-space">                </span>}</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>/**</p>
-<p class="p1"><span class="Apple-converted-space">             </span>* エラーメッセージを表示する</p>
-<p class="p1"><span class="Apple-converted-space">             </span>* @param {string} message - 表示するエラーテキスト</p>
-<p class="p1"><span class="Apple-converted-space">             </span>*/</p>
-<p class="p1"><span class="Apple-converted-space">            </span>function showError(message) {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>errorText.textContent = message;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>errorArea.classList.remove('hidden');</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p2"><span class="Apple-converted-space">            </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>// --- 簡易プレビュー機能の追加 ---</p>
-<p class="p1"><span class="Apple-converted-space">            </span>// 抵抗値入力フィールドの 'input' イベントでリアルタイム計算</p>
-<p class="p1"><span class="Apple-converted-space">            </span>resistanceInput.addEventListener('input', calculateResistance);</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>// 接続方法ラジオボタンの 'change' イベントでリアルタイム計算</p>
-<p class="p1"><span class="Apple-converted-space">            </span>document.querySelectorAll('input[name="connectionType"]').forEach(radio =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>radio.addEventListener('change', calculateResistance);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>});</p>
-<p class="p1"><span class="Apple-converted-space">            </span>// --------------------------------</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>// 手動計算ボタンのイベントリスナーは引き続き機能させる</p>
-<p class="p1"><span class="Apple-converted-space">            </span>calculateButton.addEventListener('click', calculateResistance);</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>// Enterキーでの計算実行</p>
-<p class="p1"><span class="Apple-converted-space">            </span>resistanceInput.addEventListener('keypress', (e) =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>if (e.key === 'Enter') {</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>e.preventDefault(); // フォーム送信を防ぐ</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>calculateResistance();</p>
-<p class="p1"><span class="Apple-converted-space">                </span>}</p>
-<p class="p1"><span class="Apple-converted-space">            </span>});</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>// MathJax CDNの読み込み（数式表示のため）</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const script = document.createElement('script');</p>
-<p class="p1"><span class="Apple-converted-space">            </span>script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';</p>
-<p class="p1"><span class="Apple-converted-space">            </span>script.id = 'MathJax-script';</p>
-<p class="p1"><span class="Apple-converted-space">            </span>document.head.appendChild(script);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>});</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/script&gt;</p>
-<p class="p1">&lt;/body&gt;</p>
-<p class="p1">&lt;/html&gt;</p>
+<body class="bg-gray-50 min-h-screen flex items-center justify-center p-4">
+
+    <div id="app" class="bg-white p-6 sm:p-8 rounded-3xl shadow-custom w-full max-w-lg border border-gray-200">
+        <h1 class="text-3xl font-extrabold text-blue-800 mb-2 text-center">合成抵抗計算機</h1>
+        <!-- 説明文を更新してリアルタイム更新を追記 -->
+        <p class="text-gray-600 mb-6 text-center">抵抗値（$\Omega$）をカンマ区切りで入力し、接続方法を選択してください。入力に応じて結果がリアルタイムで更新されます。</p>
+
+        <!-- 入力エリア -->
+        <div class="space-y-6">
+            <div>
+                <label for="resistanceInput" class="block text-sm font-medium text-gray-700 mb-2">抵抗値 (例: 10, 200, 3.3)</label>
+                <input type="text" id="resistanceInput" placeholder="抵抗値1, 抵抗値2, ..."
+                       class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 transition duration-150 text-lg">
+            </div>
+
+            <!-- 接続方法選択 -->
+            <fieldset>
+                <legend class="text-sm font-medium text-gray-700 mb-3">接続方法の選択</legend>
+                <div class="flex space-x-6 justify-center">
+                    <label class="flex items-center space-x-2 cursor-pointer bg-blue-50 p-3 rounded-lg hover:bg-blue-100 transition duration-150">
+                        <input type="radio" name="connectionType" value="series" checked class="h-5 w-5 text-blue-600 border-gray-300 focus:ring-blue-500">
+                        <span class="text-base font-semibold text-gray-800">直列接続</span>
+                    </label>
+                    <label class="flex items-center space-x-2 cursor-pointer bg-blue-50 p-3 rounded-lg hover:bg-blue-100 transition duration-150">
+                        <input type="radio" name="connectionType" value="parallel" class="h-5 w-5 text-blue-600 border-gray-300 focus:ring-blue-500">
+                        <span class="text-base font-semibold text-gray-800">並列接続</span>
+                    </label>
+                </div>
+            </fieldset>
+
+            <!-- 計算ボタン -->
+            <button id="calculateButton"
+                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl transition duration-200 shadow-lg hover:shadow-xl transform hover:scale-[1.01] focus:outline-none focus:ring-4 focus:ring-blue-300 text-lg">
+                合成抵抗を計算 (手動更新)
+            </button>
+        </div>
+
+        <!-- 結果表示エリア -->
+        <div id="resultArea" class="mt-8 pt-6 border-t border-gray-200 hidden">
+            <h2 class="text-xl font-bold text-gray-800 mb-3 flex items-center">
+                計算結果
+                <svg class="w-6 h-6 ml-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </h2>
+            <div class="bg-green-50 border-l-4 border-green-500 text-green-800 p-4 rounded-lg">
+                <p id="resultText" class="text-2xl font-extrabold"></p>
+                <p id="formulaText" class="text-sm mt-1 text-green-700"></p>
+            </div>
+        </div>
+
+        <!-- エラーメッセージエリア -->
+        <div id="errorArea" class="mt-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg hidden">
+            <p id="errorText" class="font-medium"></p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const resistanceInput = document.getElementById('resistanceInput');
+            const calculateButton = document.getElementById('calculateButton');
+            const resultArea = document.getElementById('resultArea');
+            const resultText = document.getElementById('resultText');
+            const formulaText = document.getElementById('formulaText');
+            const errorArea = document.getElementById('errorArea');
+            const errorText = document.getElementById('errorText');
+
+            /**
+             * 抵抗の合成抵抗を計算するメイン関数
+             */
+            function calculateResistance() {
+                // エラーと結果表示を初期化
+                errorArea.classList.add('hidden');
+                resultArea.classList.add('hidden');
+                
+                const inputString = resistanceInput.value.trim();
+                const connectionType = document.querySelector('input[name="connectionType"]:checked').value;
+
+                // 1. 入力値のパースと検証
+                // 入力が空の場合は、何も表示しない（リアルタイムプレビューの自然な動作）
+                if (inputString === "") {
+                    return;
+                }
+                
+                const resistanceValues = inputString.split(/,\s*|\s+/).map(s => {
+                    const num = parseFloat(s);
+                    // 抵抗値は正の数値である必要
+                    if (isNaN(num) || num <= 0) {
+                        return null; // 無効な値としてマーク
+                    }
+                    return num;
+                }).filter(r => r !== null); // 有効な数値のみを抽出
+
+                // 有効な抵抗値が2つ以上あるか確認
+                if (resistanceValues.length < 2) {
+                    showError('抵抗値を2つ以上、カンマまたはスペースで区切って入力してください。抵抗値は正の数である必要があります。');
+                    return;
+                }
+
+                let totalResistance = 0;
+                let formula = '';
+
+                // 2. 接続方法に応じた計算
+                if (connectionType === 'series') {
+                    // 直列接続: R_total = R1 + R2 + ...
+                    totalResistance = resistanceValues.reduce((sum, R) => sum + R, 0);
+                    formula = `$$R_{\\text{total}} = ${resistanceValues.map(r => r.toFixed(1)).join(' + ')} \\approx ${totalResistance.toFixed(3)}\\Omega$$`;
+                } else if (connectionType === 'parallel') {
+                    // 並列接続: 1/R_total = 1/R1 + 1/R2 + ...
+                    const reciprocalSum = resistanceValues.reduce((sum, R) => sum + (1 / R), 0);
+                    
+                    if (reciprocalSum === 0) {
+                         // R=0の抵抗が含まれる場合は理論上無限大になるが、ここでは正の抵抗のみを扱っているため発生しないはず
+                         showError('計算エラーが発生しました。入力値を確認してください。');
+                         return;
+                    }
+
+                    totalResistance = 1 / reciprocalSum;
+                    
+                    const reciprocalTerms = resistanceValues.map(r => `\\frac{1}{${r.toFixed(1)}}`).join(' + ');
+                    // 並列計算の式をよりわかりやすく表示
+                    formula = `$$\\frac{1}{R_{\\text{total}}} = ${reciprocalTerms}$$`;
+                    formula += `<div class="mt-2">$$R_{\\text{total}} \\approx ${totalResistance.toFixed(3)}\\Omega$$</div>`;
+                }
+
+                // 3. 結果表示
+                resultText.textContent = `合成抵抗: ${totalResistance.toFixed(3)} Ω`;
+                formulaText.innerHTML = formula;
+                
+                resultArea.classList.remove('hidden');
+                
+                // MathJaxを再レンダリングして数式を表示
+                if (window.MathJax) {
+                    MathJax.typesetPromise([formulaText]).catch((err) => console.log('MathJax Typeset Error: ' + err.message));
+                }
+            }
+
+            /**
+             * エラーメッセージを表示する
+             * @param {string} message - 表示するエラーテキスト
+             */
+            function showError(message) {
+                errorText.textContent = message;
+                errorArea.classList.remove('hidden');
+            }
+            
+            // --- 簡易プレビュー機能の追加 ---
+            // 抵抗値入力フィールドの 'input' イベントでリアルタイム計算
+            resistanceInput.addEventListener('input', calculateResistance);
+
+            // 接続方法ラジオボタンの 'change' イベントでリアルタイム計算
+            document.querySelectorAll('input[name="connectionType"]').forEach(radio => {
+                radio.addEventListener('change', calculateResistance);
+            });
+            // --------------------------------
+
+            // 手動計算ボタンのイベントリスナーは引き続き機能させる
+            calculateButton.addEventListener('click', calculateResistance);
+
+            // Enterキーでの計算実行
+            resistanceInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault(); // フォーム送信を防ぐ
+                    calculateResistance();
+                }
+            });
+
+            // MathJax CDNの読み込み（数式表示のため）
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+            script.id = 'MathJax-script';
+            document.head.appendChild(script);
+        });
+    </script>
 </body>
 </html>
